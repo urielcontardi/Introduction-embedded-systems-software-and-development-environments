@@ -1,19 +1,28 @@
-###******************************************************************************
-# Copyright (C) 2017 by Alex Fosdick - University of Colorado
-#
-# Redistribution, modification or use of this software in source or binary
-# forms is permitted as long as the files maintain this copyright. Users are 
-# permitted to modify this and use it to learn about the field of embedded
-# software. Alex Fosdick and the University of Colorado are not liable for any
-# misuse of this material. 
-#
-###*****************************************************************************
+# Introduction to Embedded Systems Software and Development Environments
+## University of Colorado Boulder
 
+This repository contains the course materials and projects for the "Introduction to Embedded Systems Software and Development Environments" course offered by the University of Colorado Boulder on Coursera. You can find the course [here](https://www.coursera.org/learn/introduction-embedded-systems/home/welcome).
 
-### This is a free access repository for the Coursera Specialization of Embedded
-### Software Essentials to use in conjunction with the course1, the Introductio
-### to Embedded Software and Development Environments.
+## About the Course
 
-### The repository is organized in multiple folders:
-###      demos -> Materials to help you follow along with videos
-###      assessments -> Materials used for assessments
+This course has provided me with valuable insights into the world of embedded systems, allowing me to revisit and reinforce the knowledge I acquired during my academic years.
+
+### Week 1: Getting Started
+In the first week, we delved into the fundamentals of embedded systems. We wrote C programs to perform statistical analysis, learning how to compile code and lay the foundation for the course.
+
+## Repository Structure
+The repository is organized by weeks, making it easy to navigate the course materials and projects.
+
+- `Week1`: Contains materials and code related to the first week of the course.
+- `Week2`: For the second week and so on.
+
+## How to Use This Repository
+You can access the course materials, assignments, and code for each week by navigating to the respective week's folder. Feel free to explore and use the resources as you progress through the course.
+
+## Acknowledgments
+I would like to express my gratitude to the University of Colorado Boulder for providing this valuable course on Coursera.
+
+## Contact
+If you have any questions or would like to connect, feel free to reach out to me at urielcontardi@hotmail.com 
+
+Happy learning!
