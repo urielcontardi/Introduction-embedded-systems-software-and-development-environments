@@ -10,109 +10,114 @@
 #*****************************************************************************
 include sources.mk
 
-# Platform Overrides
-BASENAME = course1
- 
-# Architectures Specific Flags
-ifeq ($(PLATFORM), MSP432)
-	LINKER_FILE = -T msp432p401r.lds 
+# Compile time switches
+COURSE1 = true
+VERBOSE = true
+
+# General Flags for all platforms
+GEN_FLAGS = -Wall \
+			-g \
+			-O0 \
+			-std=c99
+			# -Werror \
+
+TARGET = final_assesment
+
+# General Flags for all platforms
+GEN_FLAGS = -Wall \
+			-g \
+			-O0 \
+			-std=c99
+			# -Werror \
+
+TARGET = final_assesment
+
+# Platform Dependant Variables
+ifeq ($(PLATFORM),MSP432)
+	# MSP432 dependant build options
 	CPU = cortex-m4
 	ARCH = armv7e-m
-	SPECS = nosys.specs
-else
-	CPU = x86_64
-	ARCH:=$(shell arch)
-endif 
 
-# Compiler Flags and Defines
-ifeq ($(PLATFORM), MSP432)
+	# Compiler
 	CC = arm-none-eabi-gcc
+
+	# Linker
 	LD = arm-none-eabi-ld
-	LDFLAGS = -Wl,-Map=$(BASENAME).map $(LINKER_FILE) 
-	CFLAGS = -mcpu=$(CPU) -march=$(ARCH) --specs=$(SPECS) -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mthumb -Wall -O0 -g -std=c99   
-	CPPFLAGs = -M -MF test.d
-	DEFINEFLAG = -DMSP432
+	SIZE = arm-none-eabi-size
+
+	# Linker Flags
+	LINKER_FILE = ../msp432p401r.lds
+	LDFLAGS = -Wl,-Map=$(TARGET).map -T $(LINKER_FILE) -lm
+	
+	# Compiler Flags
+	CFLAGS = 	$(GEN_FLAGS) \
+				-mcpu=$(CPU) \
+				-mthumb \
+				-march=$(ARCH) \
+				-mfloat-abi=hard \
+				-mfpu=fpv4-sp-d16\
+				--specs=nosys.specs
+	CPPFLAGS = -DMSP432 $(INCLUDES)
+
+
 else
+	# @echo Host platform detected
 	CC = gcc
-	LDFLAGS = -Wl,-Map=$(BASENAME).map
-	CFLAGS = -Wall -O0 -g -std=c99
-	CPPFLAGs = -M -MF test2.d
-	DEFINEFLAG = -DHOST
+	CFLAGS = $(GEN_FLAGS)
+	CPPFLAGS = -DHOST $(INCLUDES)
+	SIZE = size
+	LDFLAGS = -lm
+
 endif
 
-ifeq ($(VERBOSE), TRUE)
-	CFLAGS += -DVERBOSE
+# IF COURSE1 is defined, add a flag
+ifeq ($(COURSE1), true)
+	CPPFLAGS += -DCOURSE1
 endif
 
-ifeq ($(COURSE1), TRUE)
-	CFLAGS += -DCOURSE1
+# IF VERBOSE is defined, add a flag
+ifeq ($(VERBOSE), true)
+	CPPFLAGS += -DVERBOSE
 endif
 
-# More Declared Variables
-OBJS:= $(SOURCES:.c=.o)
-ASMS:= $(SOURCES:.c=.s)
-PPS:= $(SOURCES:.c=.i)
-MAPS:= $(SOURCES:.c=.map)
-OUTS:= $(SOURCES:.c=.out)
+PREP = $(SOURCES:.c=.i)	# Preprocessor Files
+DEPS = $(SOURCES:.c=.d)	# Dependancy Files
+ASMS = $(SOURCES:.c=.asm)	# Assembly Files
+OBJS = $(SOURCES:.c=.o)	# Object files
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
-# Target: <file>.i
-# Prerequisites: the .c file
-# Output: the .d as well as .i files
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
-%.i : %.c
-	$(CC) $(CPPFLAGs) $(DEFINEFLAG) $<
-	$(CC) $(DEFINEFLAG) -E -o $@ $<
-#$(CC) $(CPPFLAGs) -E -o $@ $< 
-### -E: Stop after the preprocessing stage; do not run the compiler proper. The output is in the form of preprocessed source code, which is sent to the standard output. 
+.PHONY: compile-all build clean run
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
-# Target: <file>.asm
-# Prerequisites: the .c file
-# Output: the .asm file whether from the .c file or the object file
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
-%.asm : %.c
-	$(CC) $(DEFINEFLAG) $(CFLAGS) -S $<
-	objdump $(OBJS) -D
-### -S: Stop after the stage of compilation proper; do not assemble. The output is in the form of an assembler code file for each non-assembler input file specified. 
+# Compile all object files and link into a final executable.
+build: $(TARGET).out
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
-# Target: <file>.o
-# Prerequisites: the .c file
-# Output: the .o file corresponding to the provided .c file
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
-%.o : %.c
-	$(CC) $(DEFINEFLAG) $(CFLAGS) -c $<
+$(TARGET).out: $(OBJS)
+	$(CC) $(OBJS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@
+	$(SIZE) $@
+	
+# Generate Preprocesed output of all c-program implementation files (use the -E flag)
+%.i: %.c
+	$(CC) -E $< $(CFLAGS) $(CPPFLAGS) -o $@
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
-# Target: compile-all
-# Prerequisites: the source files
-# Output: all source files are compiled but without linking and their corresponding .o files are generated
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
-.PHONY: compile-all
-compile-all: $(SOURCES)
-#$(OBJS): $(SOURCES)
-	$(CC) $(DEFINEFLAG) $(CFLAGS) -c $(SOURCES) -lm
+# Generate assembly output of c-program implementation files and the final output executable (Use the –S flag and the objdump utility).
+%.asm: %.c
+	$(CC) -S $< $(CFLAGS) $(CPPFLAGS) -o $@
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
-# Target: build
-# Prerequisites: the main.out file
-# Output: the final executable file after linking and a brief report regarding the application size
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
-.PHONY: build
-build: $(OUTS)
-#main.out
-# I've a question here, if I set the prerequisites to main.o instead of main.out, the process doesn't get finished ... also how can make compiles the files and generate the object files when they are not provided by user as prerequesites. How can make understand that it should generate the .o files from the .c files before proceeding?
-$(OUTS): $(SOURCES)
-	$(CC) $(DEFINEFLAG) $(CFLAGS) $(LDFLAGS) -o course1.out $^ -lm
-	size -Atd course1.out
+# Generate the object file for all c-source files (but do not link) by specifying the object file you want to compile.
+%.o: %.c
+	$(CC) -c $< $(CFLAGS) $(CPPFLAGS) -o $@
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
-# Target: clean
-# Prerequisites: None
-# Output: all generated file are removed and the directory is cleaned for a new build
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
-.PHONY: clean
+# Generate Dependancy files for each Source File
+%.d: %c
+	$(CC) -E -M $<  $(CPPFLAGS) -o $@
+
+# Compile all object files, but DO NOT link.
+compile-all: $(OBJS)
+
 clean:
-#rm -f $(OBJS) main.out $(ASMS) $(PPS) $(MAPS)
-	rm -f *.i *.d *.map *.s *.out *.o
+	# This should remove all compiled objects, preprocessed outputs, assembly outputs, executable files and build output files.
+	@echo Removing all built files
+	find ./src/ -type f \( -name "*.o" -o -name "*.out" -o -name "*.map" -o -name "*.asm" -o -name "*.i" \) -delete
+
+# Build all and run file
+run: $(TARGET).out
+	./$(TARGET).out

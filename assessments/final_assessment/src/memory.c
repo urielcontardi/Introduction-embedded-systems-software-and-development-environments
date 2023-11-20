@@ -121,13 +121,6 @@ uint8_t *my_reverse(uint8_t *src, size_t length)
     return src; // Return the pointer to the source
 }
 
-int32 *reserve_words(size_t length){
-    if (((int32 *) malloc(length)) != NULL){
-        return ((int32 *) malloc(length));
-    }
-    else return NULL;
-}
-
 int32_t *reserve_words(size_t length) {
     // Allocate memory for the given number of words
     int32_t *ptr = (int32_t *)malloc(length * sizeof(int32_t));
@@ -135,7 +128,7 @@ int32_t *reserve_words(size_t length) {
     return ptr; // Return the pointer to the allocated memory
 }
 
-void free_words(int32_t *src) {
+void free_words(uint32_t *src) {
     // Free the dynamically allocated memory using free function
     free(src);
 }

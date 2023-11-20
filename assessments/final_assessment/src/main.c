@@ -25,6 +25,7 @@
 #include "memory.h"
 #include "stats.h"
 #include "data.h"
+#include "course1.h"
 
 int main(void)
 {

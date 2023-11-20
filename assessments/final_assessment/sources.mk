@@ -9,24 +9,28 @@
 #
 #*****************************************************************************
 
+# Platform Overrides
+PLATFORM=HOST
+
+# Folders
+SRC_DIR := ./src
+OBJ_DIR := ./obj
+INC_DIR := ./include
+
 ifeq ($(PLATFORM),MSP432)
-	SOURCES = src/*.c
+	SOURCES = $(SRC_DIR)/*.c
 
-	INCLUDES = \
-		-I ../include/common \
-		-I ../include/CMSIS \
-		-I ../include/msp432 
-
+	INCLUDES+= 	-I include/common/
+				-I include/CMSIS/ \
+				-I include/msp432/
 else
-	SOURCES = src/main.c \
-			src/course1.c \
-		 	src/memory.c \
-		 	src/data.c \
-		 	src/stats.c \
+	SOURCES = 	$(SRC_DIR)/main.c \
+				$(SRC_DIR)/memory.c \
+				$(SRC_DIR)/stats.c \
+				$(SRC_DIR)/data.c \
+				$(SRC_DIR)/course1.c 
 
-	INCLUDES = \
-		-I ../include/common \
+	INCLUDES = -I include/common/
 
 endif
-
 
